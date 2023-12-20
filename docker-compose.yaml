@@ -1,0 +1,15 @@
+version: '3'
+services:
+  nest-app:
+    build: .
+    ports:
+      - '3080:3080'
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - redis
+
+  redis:
+    image: 'redis:alpine3.16'
+    ports:
+      - '6379:6379'
