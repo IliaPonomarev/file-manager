@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module';
 import { FileProcessingModule } from './modules/file-processing/file-processing.module';
 import { BullModule } from '@nestjs/bull';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { BullModule } from '@nestjs/bull';
       }),
     }),
     AuthModule, 
-    FileProcessingModule
+    FileProcessingModule,
+    TasksModule
   ],
   controllers: [],
   providers: [],
