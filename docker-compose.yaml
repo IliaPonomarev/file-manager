@@ -1,6 +1,6 @@
 version: '3'
 services:
-  nest-app:
+  file-manager:
     build: .
     ports:
       - '3080:3080'
@@ -9,20 +9,64 @@ services:
     depends_on:
       - redis
       - minio
+    networks:
+      - file-manager-network
+
+  file-handler:
+    build: ../file-handler
+    ports:
+      - '3081:3081'
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - redis
+      - minio
+      - postgres
+    networks:
+      - file-manager-network
+
+  postgres:
+    image: postgres:14.10-alpine3.19
+    security_opt:
+      - no-new-privileges:true
+      - apparmor=docker-default
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - file-manager-network
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "127.0.0.1:8432:5432"
+    restart: unless-stopped
+    healthcheck:
+      disable: true
 
   redis:
     image: 'redis:alpine3.16'
     ports:
       - '6379:6379'
+    networks:
+      - file-manager-network
   
   minio:
     image: 'minio/minio'
     ports:
       - '9000:9000'
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     volumes:
       - './minio-data:/data'
       - './minio-config:/root/.minio'
     command: server /data
+    networks:
+      - file-manager-network
+  
+networks:
+  file-manager-network:
+    driver: bridge
+volumes:
+  postgres:
