@@ -4,22 +4,38 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
+import { NestMinioService } from 'nestjs-minio';
 
 @Injectable()
 export class FileProcessingService {
-  constructor(@InjectQueue('file-processing-queue') private readonly fileProcessingQueue: Queue) {}
+  
+  constructor(
+    @InjectQueue('file-processing-queue') private readonly fileProcessingQueue: Queue,
+    private readonly minioService: NestMinioService
+  ) {}
 
   async handleFile(fileBuffer: Buffer): Promise<void> {
-    const uidFileName = `${uuidv4()}.xlsx`;
+    try {
+      const uidFileName = `${uuidv4()}.xlsx`;
 
-    const directoryPath = path.join(__dirname, '..', '..', '..', 'files');
-    const filePath = path.join(directoryPath, uidFileName);
+      const minioClient = await this.minioService.getMinio();
+      const bucketName = 'file-processing';
 
-    await mkdir(directoryPath, { recursive: true });
-    await writeFile(filePath, fileBuffer);
-    
-    const taskData = { fileName: uidFileName };
+      const bucketExists = await minioClient.bucketExists(bucketName);
 
-    await this.fileProcessingQueue.add('processFile', taskData);
+      if (!bucketExists) {
+        await minioClient.makeBucket(bucketName);
+      }
+      
+      await minioClient.putObject(bucketName, uidFileName, fileBuffer);
+      
+      const taskData = { fileName: uidFileName };
+  
+      await this.fileProcessingQueue.add('processFile', taskData);
+    } catch(e) {
+      console.log(e);
+      throw e;
+    }
+
   }
 }

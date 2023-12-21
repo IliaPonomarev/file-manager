@@ -6,3 +6,4 @@ dist
 .dockerignore
 .git
 .gitignore
+minio-data
