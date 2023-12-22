@@ -13,7 +13,7 @@ services:
       - file-manager-network
 
   file-handler:
-    build: ../file-handler
+    build: ../file-manager-consumer
     ports:
       - '3081:3081'
     environment:
