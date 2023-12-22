@@ -3,11 +3,12 @@ import { BullModule } from '@nestjs/bull';
 import { FileProcessingController } from './file-processing.controller';
 import { FileProcessingService } from './file-processing.service';
 import { AuthModule } from '../auth/auth.module';
+import { appConf } from 'src/config';
 
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'file-processing-queue',
+      name: appConf.bullQueue,
     }),
     AuthModule
   ],

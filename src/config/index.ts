@@ -4,6 +4,7 @@ dotenv.config();
 
 export const appConf = {
   port: process.env.PORT || 3080,
+  JWTSecret: process.env.JWT_SECRET,
   postgresDb: process.env.POSTGRES_DB,
   postgresUser: process.env.POSTGRES_USER,
   postgresPassword: process.env.POSTGRES_PASSWORD,
